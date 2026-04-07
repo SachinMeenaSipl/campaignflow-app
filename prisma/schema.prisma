@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  passwordHash String
+  templates    Template[]
+  contactLists ContactList[]
+  contacts     Contact[]
+  campaigns    Campaign[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Template {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  subject     String
+  htmlContent String     @db.Text
+  previewText String?
+  variables   String[]
+  campaigns   Campaign[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model ContactList {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  source      String
+  contacts    Contact[]
+  campaigns   Campaign[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model Contact {
+  id         String        @id @default(cuid())
+  userId     String
+  listId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list       ContactList   @relation(fields: [listId], references: [id], onDelete: Cascade)
+  name       String
+  email      String
+  status     ContactStatus @default(ACTIVE)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([listId])
+  @@unique([listId, email])
+}
+
+model Campaign {
+  id            String         @id @default(cuid())
+  userId        String
+  templateId    String
+  contactListId String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template      Template       @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  contactList   ContactList    @relation(fields: [contactListId], references: [id], onDelete: Restrict)
+  name          String
+  status        CampaignStatus @default(DRAFT)
+  scheduledAt   DateTime?
+  sentCount     Int            @default(0)
+  failedCount   Int            @default(0)
+  openRate      Float          @default(0)
+  emailLogs     EmailLog[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([templateId])
+  @@index([contactListId])
+  @@index([status])
+}
+
+model EmailLog {
+  id            String         @id @default(cuid())
+  campaignId    String
+  campaign      Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  email         String
+  recipientName String
+  status        EmailLogStatus @default(QUEUED)
+  opened        Boolean        @default(false)
+  error         String?
+  providerId    String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([campaignId])
+  @@index([email])
+  @@index([status])
+}
+
+enum ContactStatus {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+enum CampaignStatus {
+  DRAFT
+  QUEUED
+  SCHEDULED
+  SENDING
+  COMPLETED
+}
+
+enum EmailLogStatus {
+  QUEUED
+  SENT
+  FAILED
+}
