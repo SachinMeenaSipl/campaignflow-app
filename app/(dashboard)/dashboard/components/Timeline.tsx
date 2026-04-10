@@ -22,8 +22,8 @@ export function Timeline() {
                   {metrics.startLabel} to {metrics.endLabel}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Total duration: 4 months + 9 days across a 131-day execution window. Today sits on day{" "}
-                  {metrics.currentDay}.
+                  Total duration: {metrics.totalDurationDays} days across a dynamic execution window. 
+                  Currently on day {metrics.currentDay} with <span className="text-primary font-bold">{metrics.daysRemaining} days remaining</span>.
                 </p>
               </div>
               <div className="rounded-2xl bg-black/40 border border-white/5 px-5 py-4 text-white backdrop-blur-md shadow-inner">

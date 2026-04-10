@@ -23,7 +23,7 @@ export default async function DashboardPage() {
       <PageHeader
         eyebrow="Mission control"
         title="Timeline-driven campaign dashboard"
-        description="Track the full 131-day runway, watch delivery performance, and move from template drafting to queued sends without leaving the dashboard."
+        description="Track your campaign runway, watch delivery performance, and move from template drafting to queued sends without leaving the dashboard."
         actions={
           <>
             <Link href="/contacts/upload">
